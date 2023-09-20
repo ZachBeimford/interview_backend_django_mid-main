@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
+from datetime import datetime, timedelta
 
 from interview.inventory.models import Inventory, InventoryLanguage, InventoryTag, InventoryType
 from interview.inventory.schemas import InventoryMetaData
@@ -219,3 +220,12 @@ class InventoryTypeRetrieveUpdateDestroyView(APIView):
     
     def get_queryset(self, **kwargs):
         return self.queryset.get(**kwargs)
+
+class InventoryItemsAfterDateView(APIView):
+    serializer_class = InventorySerializer
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        date = datetime(self.kwargs["year"], self.kwargs["month"], self.kwargs["day"])
+        serializer = self.serializer_class(Inventory.objects.filter(items_after__range=date))
+
+        return Response(serializer.data, status=200)
